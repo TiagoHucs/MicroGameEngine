@@ -1,4 +1,5 @@
-// montando o jogo (metodo chamado pela página index.html)
+G1 = 0.2;
+
 function startGame() {
 
 	// Cria o heró do jogo
@@ -6,6 +7,7 @@ function startGame() {
 	
 	// Cria plataformas para pular em cima
 	plataforma1 = new plataforma(100, 20, "white", 80, 200);
+	plataforma2 = new plataforma(100, 20, "white", 180, 160);
 	
 	// Cria um controlados para receber eventos do teclado e mouse e transformalas em ação do jogo
 	joystick = new controlador();
@@ -79,27 +81,34 @@ function controlador() {
 	// mesmas funçoes porém eventos de teclas que deixaram de ser pressionadas
 	this.keyUp = function(e) {
 		
-		if(e.keyCode == 37){ //Esq
+		if(e.keyCode == 38){ // Tecla para cima
+			this.up=false;
+		}
+		
+		if(e.keyCode == 37){ // Tecla para esquerda
 			this.left=false;
 		}
 		
-		if(e.keyCode == 39){ //Dir
+		if(e.keyCode == 39){ // Tecla para direita
 			this.right=false;
+		}
+		
+		if(e.keyCode == 40){ // Tecla para Baixo
+			this.down=false;
 		}
     }	
 	
 }
 
-// monta as caracteristicas do personagem
 function personagem(width, height, color, x, y) {
     
     this.width = width;
     this.height = height;
     this.x = x;
     this.y = y;
-    this.speedX = 0;
-    this.speedY = 0;    
-    this.gravity = 0.1; // "Gravidade" força que puxa para baixo -- normal 0.1
+    this.speedX = 0.0;
+    this.speedY = 0.0; 	
+    this.gravity = G1; // "Gravidade" força que puxa para baixo -- normal 0.1
     this.gravitySpeed = 0; // velocidade da queda
 	this.isGrounded = false;
     
@@ -112,8 +121,10 @@ function personagem(width, height, color, x, y) {
 	
     this.move = function() {
 	
-		if (joystick.right){this.speedX+=0.1}; // se é verdade que o controle tecla para direita então vá
-		if (joystick.left){this.speedX+=-0.1}; // se é verdade que o controle tecla para esquerda então vá
+		if (joystick.right){this.speedX=3}; 
+		if (joystick.left){this.speedX=-3}; 
+		if (!joystick.left&&!joystick.right){this.speedX=0};
+		if (joystick.up){this.pular()};
 		this.x += this.speedX; 
         this.gravitySpeed += this.gravity;
         this.y += this.speedY + this.gravitySpeed;
@@ -122,22 +133,20 @@ function personagem(width, height, color, x, y) {
 	
 	this.pular = function(){
 		if(this.isGrounded){
-			this.speedY = this.speedY -5.5;
-			this.isGrounded = false;
+			this.gravitySpeed+= -5;			
+			this.isGrounded=false;
 		}
+
     }
 	
-	this.aterrisar = function(){
-		this.gravitySpeed=0;
-	    this.speedY=0;
-		this.gravity=0;
-		this.isGrounded = true;	
-	}
+	this.parar = function(){
 	
-	this.cair = function(){
-		this.gravity=0.1;
-		this.isGrounded = false;
-	}	
+		this.speedY = 0.0;    
+		this.gravitySpeed = 0.0;
+		this.gravity = 0.0;
+		this.isGrounded=true;
+	
+	}
 	
 	this.colide = function(otherobj) {
         var myleft = this.x;
@@ -180,16 +189,20 @@ function updateGameArea() {
 		heroi.move();
 		heroi.update();
 		plataforma1.update();
+		plataforma2.update();
 		
 		//testar colisões:
 		if(heroi.colide(plataforma1)){
-
-			if(heroi.y<plataforma1.y){
-				heroi.aterrisar();
-			}
+			heroi.y=plataforma1.y-heroi.height;
+			heroi.parar();
 			
+		}else if (heroi.colide(plataforma2)){
+			heroi.y=plataforma2.y-heroi.height;
+			heroi.parar();
 		}else{
-			heroi.cair();
+			heroi.gravity = G1;
+			heroi.isGrounded=false;
 		}
 
+		
 }
