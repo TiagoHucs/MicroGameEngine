@@ -2,12 +2,19 @@ G1 = 0.2;
 
 function startGame() {
 
-	// Cria o heró do jogo
+	// Cria o herói do jogo
     heroi = new personagem(30, 30, "white", 80, 75);
 	
+	// Cria o herói do jogo
+    pontos = new pontuacao();
+
+	
 	// Cria plataformas para pular em cima
-	plataforma1 = new plataforma(100, 20, "white", 80, 200);
+	plataforma1 = new plataforma(480, 20, "white", 80, 200);
 	plataforma2 = new plataforma(100, 20, "white", 180, 160);
+	
+	// agrupa plataformas do jogo em um array de objetos
+	plataformas = [plataforma1,plataforma2];
 	
 	// Cria um controlados para receber eventos do teclado e mouse e transformalas em ação do jogo
 	joystick = new controlador();
@@ -102,6 +109,7 @@ function controlador() {
 
 function personagem(width, height, color, x, y) {
     
+	this.pontos=0;
     this.width = width;
     this.height = height;
     this.x = x;
@@ -135,6 +143,7 @@ function personagem(width, height, color, x, y) {
 		if(this.isGrounded){
 			this.gravitySpeed+= -5;			
 			this.isGrounded=false;
+			this.pontos+= 1;
 		}
 
     }
@@ -183,13 +192,26 @@ function plataforma(width, height, color, x, y) {
 
 }
 
+function pontuacao() {
+
+	this.update = function() {
+		ctx = areaDeJogo.context;
+		ctx.font="15px Verdana";
+		ctx.fillText("Pontos: "+heroi.pontos,10,20);
+    }
+
+}
+
 function updateGameArea() {
 
 		areaDeJogo.clear();
 		heroi.move();
 		heroi.update();
-		plataforma1.update();
-		plataforma2.update();
+		for (i = 0; i< plataformas.length;i++){
+		plataformas[i].update();
+		}
+		pontos.update();
+		
 		
 		//testar colisões:
 		if(heroi.colide(plataforma1)){
